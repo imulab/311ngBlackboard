@@ -1,0 +1,348 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>ca.utoronto.eil.ontology</groupId>
+	<artifactId>311ngBlackboard</artifactId>
+	<packaging>war</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>311ngBlackboard Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+	
+	<!-- ***** Build ***** -->
+	<build>
+		<finalName>311ngBlackboard</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>tomcat-maven-plugin</artifactId>
+				<configuration>
+					<url>http://localhost:8080/manager/text</url>
+					<server>tomcat_server</server>
+					<path>/311ngBlackboard</path>
+					<warFile>${project.build.directory}/${project.build.finalName}.war</warFile>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.zeroturnaround</groupId>
+				<artifactId>jrebel-maven-plugin</artifactId>
+				<version>1.1.3</version>
+				<executions>
+					<execution>
+						<id>generate-rebel-xml</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<!-- ===== /Build ===== -->
+
+
+	<!-- ***** Dependencies ***** -->
+	<dependencies>
+
+		<!-- junit.junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${version.junit}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- com.google.code.gson -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${version.gson}</version>
+		</dependency>
+
+		<!-- aopalliance.aopalliance -->
+		<dependency>
+			<groupId>aopalliance</groupId>
+			<artifactId>aopalliance</artifactId>
+			<version>${version.aopalliance}</version>
+		</dependency>
+
+		<!-- org.aspectj.aspectjweaver -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>${version.aspectjweaver}</version>
+		</dependency>
+
+		<!-- cglib.cglib -->
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>${version.cglib}</version>
+		</dependency>
+
+		<!-- javassist.javassist -->
+		<dependency>
+			<groupId>javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>${version.javassist}</version>
+		</dependency>
+
+		<!-- commons-cli.commons-cli -->
+		<dependency>
+			<groupId>commons-cli</groupId>
+			<artifactId>commons-cli</artifactId>
+			<version>${version.commons-cli}</version>
+		</dependency>
+
+		<!-- commons-io.commons-io -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${version.commons-io}</version>
+		</dependency>
+
+		<!-- commons-logging.commons-logging -->
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>${version.commons-logging}</version>
+		</dependency>
+
+		<!-- commons-collections.commons-collections -->
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>${version.commons-collections}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-core -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-expression -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-beans -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-aop -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-context -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-context-support -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-tx -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-oxm -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-web -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-webmvc -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-webnvc-portlet -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc-portlet</artifactId>
+			<version>${version.spring}</version>
+		</dependency>
+
+		<!-- org.springframework.spring-test -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${version.spring}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- taglibs.taglibs -->
+		<dependency>
+			<groupId>taglibs</groupId>
+			<artifactId>standard</artifactId>
+			<version>${version.taglibs}</version>
+		</dependency>
+
+		<!-- jstl.jstl -->
+		<dependency>
+			<groupId>jstl</groupId>
+			<artifactId>jstl</artifactId>
+			<version>${version.jstl}</version>
+		</dependency>
+
+		<!-- log4j.log4j -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${version.log4j}</version>
+		</dependency>
+
+		<!-- javax.servlet.servlet-api -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>${version.servlet}</version>
+		</dependency>
+
+		<!-- org.apache.httpcomponents.httpclient -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${version.apache_http}</version>
+		</dependency>
+
+		<!-- dom4j.dom4j -->
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>${version.dom4j}</version>
+		</dependency>
+
+		<!-- antlr.antlr -->
+		<dependency>
+			<groupId>antlr</groupId>
+			<artifactId>antlr</artifactId>
+			<version>${version.antlr}</version>
+		</dependency>
+
+		<!-- joda-time.joda-time -->
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>${version.joda}</version>
+		</dependency>
+	
+		<!-- net.sf.ehcache.ehcache -->
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>${version.ehcache}</version>
+			<type>pom</type>
+		</dependency>
+
+	</dependencies>
+	<!-- ===== /Dependencies ===== -->
+
+	<!-- ***** Property ***** -->
+	<properties>
+
+		<!-- version: net.sf.ehcache.ehcache -->
+		<version.ehcache>2.4.7</version.ehcache>
+		
+		<!-- version: joda-time.joda-time -->
+		<version.joda>2.1</version.joda>
+
+		<!-- version: dom4j.dom4j -->
+		<version.dom4j>1.6.1</version.dom4j>
+
+		<!-- version: antlr.antlr -->
+		<version.antlr>2.7.7</version.antlr>
+
+		<!-- version: log4j.log4j -->
+		<version.log4j>1.2.17</version.log4j>
+
+		<!-- version: javax.servlet.servlet-api -->
+		<version.servlet>2.5</version.servlet>
+
+		<!-- version: org.apache.httpcomponents.httpclient -->
+		<version.apache_http>4.2.2</version.apache_http>
+
+		<!-- version: junit.junit -->
+		<version.junit>4.10</version.junit>
+
+		<!-- version: com.google.code.gson -->
+		<version.gson>1.7.1</version.gson>
+
+		<!-- version: aopalliance.aopalliance -->
+		<version.aopalliance>1.0</version.aopalliance>
+
+		<!-- version: org.aspectj.aspectjweaver -->
+		<version.aspectjweaver>1.6.10</version.aspectjweaver>
+
+		<!-- version: cglib.cglib -->
+		<version.cglib>2.2</version.cglib>
+
+		<!-- version: javassist.javassist -->
+		<version.javassist>3.12.1.GA</version.javassist>
+
+		<!-- version: commons-cli.commons-cli -->
+		<version.commons-cli>1.2</version.commons-cli>
+
+		<!-- version: commons-io.commons-io -->
+		<version.commons-io>2.3</version.commons-io>
+
+		<!-- version: commons-logging.commons-logging -->
+		<version.commons-logging>1.1.1</version.commons-logging>
+
+		<!-- version: commons-collections -->
+		<version.commons-collections>3.2.1</version.commons-collections>
+
+		<!-- version: taglibs.standard -->
+		<version.taglibs>1.1.2</version.taglibs>
+
+		<!-- version: jstl.jstl -->
+		<version.jstl>1.2</version.jstl>
+
+		<!-- version: org.springframework.spring-* -->
+		<version.spring>3.2.0.RELEASE</version.spring>
+
+		<!-- encoding -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+	</properties>
+</project>

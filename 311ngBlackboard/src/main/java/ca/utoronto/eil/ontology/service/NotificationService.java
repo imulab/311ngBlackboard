@@ -1,0 +1,63 @@
+package ca.utoronto.eil.ontology.service;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import ca.utoronto.eil.ontology.model.ServiceException;
+
+@Service
+public class NotificationService {
+
+	private static final Logger logger = Logger.getLogger(NotificationService.class);
+	@Autowired @Qualifier("codes") private Properties codes;
+	
+	public NotificationService() {
+		
+	}
+	
+	/**
+	 * Sends notification to the client-specified URI
+	 * 
+	 * @param destinationIRI URI to send notifications to
+	 * @param quadsStr notification content
+	 * 
+	 * @throws ServiceException anything that went wrong during the process
+	 */
+	public void doNotification(String destinationIRI, String quadsStr, String uuid, Boolean test) throws ServiceException {
+		try {
+			
+			HttpClient client = new DefaultHttpClient();
+			HttpPost post = new HttpPost(destinationIRI);
+			BasicHttpParams param = new BasicHttpParams();
+			param.setParameter("quads", quadsStr);
+			post.setParams(param);
+			
+			if (!test) {
+				client.execute(post);
+				logger.info("[" + uuid + "] " + destinationIRI + " notified");
+			} else {
+				logger.info("[" + uuid + "] " + destinationIRI + " skipped due to test mode");
+			}
+		
+		} catch (IllegalArgumentException e) {
+			logger.error("[" + uuid + "] illegal argument: " + destinationIRI + ".");
+			throw new ServiceException("msg:[E0012] " + codes.getProperty("E0012") + " Problem URI: " + destinationIRI);
+		} catch (ClientProtocolException e1) {
+			logger.error("[" + uuid + "] client protocol violation in sending notification");
+			throw new ServiceException("msg:[E0013] " + codes.getProperty("E0013") + " Problem URI: " + destinationIRI);
+		} catch (IOException e2) {
+			logger.error("[" + uuid + "] I/O violation in sending notification");
+			throw new ServiceException("msg:[E0014] " + codes.getProperty("E0014") + " Problem URI: " + destinationIRI);
+		}
+	}
+}
