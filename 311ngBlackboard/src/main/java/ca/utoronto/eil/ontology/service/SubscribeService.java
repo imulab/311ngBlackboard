@@ -9,8 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import ca.utoronto.eil.ontology.dao.AGraphDao;
+import ca.utoronto.eil.ontology.model.AGraphDataAccessException;
 import ca.utoronto.eil.ontology.model.IRI;
 import ca.utoronto.eil.ontology.model.ParameterException;
+import ca.utoronto.eil.ontology.model.Quad;
 import ca.utoronto.eil.ontology.model.ServiceException;
 
 @Service
@@ -18,6 +21,8 @@ public class SubscribeService {
 
 	private static final Logger logger = Logger.getLogger(SubscribeService.class);
 	@Autowired @Qualifier("codes") private Properties codes;
+	@Autowired @Qualifier("system_fact") private Properties systemProps;
+	@Autowired @Qualifier("AGraphDao") private AGraphDao dao;
 	
 	public SubscribeService() {
 		
@@ -63,7 +68,26 @@ public class SubscribeService {
 			}
 		}
 		
-		//[TODO] Call data access objects
+		//Form a quad to call insert
+		List<Quad> quads = new ArrayList<Quad>();
+		for (IRI eachClass : classes) {
+			String rawString = "<" + systemProps.getProperty("agraph.server.graph.subscribe") + ">" 
+								+ "<" + identifier.getIri() + ">"
+								+ "<" + systemProps.getProperty("agraph.server.graph.subscribe.predicate") + ">"
+								+ "<" + eachClass.getIri() + ">";
+			try {
+				quads.add(new Quad(rawString, uuid));
+			} catch (ParameterException e) {
+				throw new ServiceException(e.getMessage());
+			}
+		}
+		
+		//Call data access objects
+		try {
+			dao.insertQuads(quads, uuid, test);
+		} catch (AGraphDataAccessException e) {
+			throw new ServiceException(e.getMessage());
+		}
 	}
 	
 	/**
@@ -78,7 +102,30 @@ public class SubscribeService {
 	 * @throws ServiceException anything that went wrong
 	 */
 	public List<String> getImmediateSubscribers(String graph, String subject, String uuid) throws ServiceException {
-		//[TODO] Implement!
-		return null;
+		List<String> classes = null;
+		List<String> subscribers = null;
+		
+		//Step 1: Get all immediate super classes
+		try {
+			IRI instanceIRI = new IRI("<" + subject + ">", uuid);
+			classes = dao.getImmediateClass(instanceIRI, graph, uuid);
+		} catch (ParameterException e) {
+			throw new ServiceException(e.getMessage());
+		} catch (AGraphDataAccessException e1) {
+			throw new ServiceException(e1.getMessage());
+		}
+		
+		//Step 2: Get all the subscriber of those classes
+		if (classes != null) {
+			for (String eachClass : classes) {
+				try {
+					subscribers = dao.getSubscriberIRI(eachClass, uuid);
+				} catch (AGraphDataAccessException e) {
+					throw new ServiceException(e.getMessage());
+				}
+			}
+		}
+		
+		return subscribers;
 	}
 }

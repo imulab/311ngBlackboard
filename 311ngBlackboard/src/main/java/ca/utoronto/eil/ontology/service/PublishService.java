@@ -9,17 +9,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import ca.utoronto.eil.ontology.dao.AGraphDao;
+import ca.utoronto.eil.ontology.model.AGraphDataAccessException;
 import ca.utoronto.eil.ontology.model.ParameterException;
 import ca.utoronto.eil.ontology.model.Quad;
 import ca.utoronto.eil.ontology.model.ServiceException;
+import ca.utoronto.eil.ontology.util.QuadUtil;
 
 @Service
 public class PublishService {
 
 	private static final Logger logger = Logger.getLogger(PublishService.class);
 	@Autowired @Qualifier("codes") private Properties codes;
+	@Autowired @Qualifier("system_fact") private Properties systemProps;
 	@Autowired private NotificationService notificationService;
 	@Autowired private SubscribeService subscribeService;
+	@Autowired @Qualifier("AGraphDao") private AGraphDao dao;
 	
 	public PublishService() {
 		
@@ -56,17 +61,33 @@ public class PublishService {
 			}
 		}
 		
-		//[TODO] Call data access object to insert
+		//Call data access object to insert
+		try {
+			dao.insertQuads(quads, uuid, test);
+		} catch (AGraphDataAccessException e) {
+			throw new ServiceException(e.getMessage());
+		}
 		
-		//For each quad, send notifications
-		for (Quad each : quads) {
-			List<String> subscriberIRIs = subscribeService.getImmediateSubscribers(each.getGraph(), each.getSubject(), uuid);
-			if (subscriberIRIs != null) {
-				for (String eachIRI : subscriberIRIs) {
-					notificationService.doNotification(eachIRI, each.toString(), uuid, test);
+		//Split the list of quads into groups by subjects
+		List<List<Quad>> groupByQuads = QuadUtil.groupBySubject(quads);
+		logger.info("[" + uuid + "] the list of quads are seperated to " + groupByQuads.size() + " based on subjects");
+		
+		for (List<Quad> eachGroupBy : groupByQuads) {
+			List<String> subscriberIRIs = subscribeService
+					.getImmediateSubscribers(
+							systemProps.getProperty("agraph.server.graph.main"), 
+							eachGroupBy.get(0).getSubject(), 
+							uuid);
+			logger.info("[" + uuid + "] found " + subscriberIRIs.size() + " immediate subscribers for " + eachGroupBy.get(0).getSubject());
+			
+			if (subscriberIRIs != null && subscriberIRIs.size() > 0) {
+				String quadListStr = QuadUtil.convertToString(eachGroupBy);
+				
+				//Notify each subscriber
+				for (String eachSubscriber : subscriberIRIs) {
+					notificationService.doNotification(eachSubscriber, quadListStr, uuid, test);
 				}
 			}
-		}// End of send notifications
-		
+		}
 	}
 }

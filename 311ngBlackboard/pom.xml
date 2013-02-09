@@ -7,7 +7,15 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>311ngBlackboard Maven Webapp</name>
 	<url>http://maven.apache.org</url>
-	
+
+	<!-- ***** Custom Repository ***** -->
+	<repositories>
+		<repository>
+			<id>clojars.org</id>
+			<url>http://clojars.org/repo</url>
+		</repository>
+	</repositories>
+
 	<!-- ***** Build ***** -->
 	<build>
 		<finalName>311ngBlackboard</finalName>
@@ -22,7 +30,7 @@
 					<warFile>${project.build.directory}/${project.build.finalName}.war</warFile>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.zeroturnaround</groupId>
 				<artifactId>jrebel-maven-plugin</artifactId>
@@ -37,7 +45,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
@@ -265,13 +273,30 @@
 			<artifactId>joda-time</artifactId>
 			<version>${version.joda}</version>
 		</dependency>
-	
+
 		<!-- net.sf.ehcache.ehcache -->
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 			<version>${version.ehcache}</version>
 			<type>pom</type>
+		</dependency>
+
+		<!-- Agraph Java Dependencies -->
+		<dependency>
+			<groupId>com.franz</groupId>
+			<artifactId>agraph-clj</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.franz</groupId>
+			<artifactId>agraph-java-client</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.franz</groupId>
+			<artifactId>openrdf-sesame-onejar</artifactId>
+			<version>2.3.1</version>
 		</dependency>
 
 	</dependencies>
@@ -282,7 +307,7 @@
 
 		<!-- version: net.sf.ehcache.ehcache -->
 		<version.ehcache>2.4.7</version.ehcache>
-		
+
 		<!-- version: joda-time.joda-time -->
 		<version.joda>2.1</version.joda>
 
