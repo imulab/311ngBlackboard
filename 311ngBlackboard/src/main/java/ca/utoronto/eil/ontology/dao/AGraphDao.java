@@ -40,7 +40,7 @@ public class AGraphDao extends AGraphBaseDao {
 
 	public AGraphDao() {
 	}
-
+	
 	/**
 	 * Insert a list of quads into the connected repository.
 	 * 
@@ -217,7 +217,7 @@ public class AGraphDao extends AGraphBaseDao {
 
 			try {
 				logger.info("[" + uuid + "] Removing quad...");
-				conn.add(subject, predicate, ((objectIsLiteral) ? (objectAsLit)
+				conn.remove(subject, predicate, ((objectIsLiteral) ? (objectAsLit)
 						: (objectAsURI)), graph);
 			} catch (RepositoryException e) {
 				logger.error("[" + uuid + "] remove quad failed", e);

@@ -51,7 +51,7 @@ public class QuadUtil {
 	public static String convertToString(List<Quad> quads) {
 		String str = "";
 		for (Quad each : quads) {
-			str = "," + each.toString();
+			str += "," + each.toString();
 		}
 		return str.substring(1);
 	}
