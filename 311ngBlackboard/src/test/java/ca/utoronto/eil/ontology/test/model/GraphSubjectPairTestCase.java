@@ -8,6 +8,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ca.utoronto.eil.ontology.model.GraphSubjectPair;
 import ca.utoronto.eil.ontology.model.ParameterException;
 import ca.utoronto.eil.ontology.model.Response;
+import ca.utoronto.eil.ontology.model.ResponseImpl;
 
 import junit.framework.TestCase;
 
@@ -59,7 +60,7 @@ public class GraphSubjectPairTestCase extends TestCase {
 	}
 	
 	private GraphSubjectPair testModel(String rawString) throws ParameterException {
-		Response response = new Response();
+		Response response = new ResponseImpl();
 		GraphSubjectPair model = new GraphSubjectPair(rawString, response.getUuid());
 		return model;
 	}

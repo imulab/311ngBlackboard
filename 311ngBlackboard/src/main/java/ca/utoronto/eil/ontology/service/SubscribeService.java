@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import ca.utoronto.eil.ontology.dao.AGraphDao;
 import ca.utoronto.eil.ontology.model.AGraphDataAccessException;
+import ca.utoronto.eil.ontology.model.GraphClassPair;
 import ca.utoronto.eil.ontology.model.IRI;
 import ca.utoronto.eil.ontology.model.ParameterException;
 import ca.utoronto.eil.ontology.model.Quad;
@@ -32,7 +33,7 @@ public class SubscribeService {
 	 * Establish subscription relationship between subject identified by iriStr and classes identified by classesStr
 	 * 
 	 * @param iriStr subject IRI in format <IRI>
-	 * @param classesStr formatted classes in format <class 1>,<class 2>, ..., <class n>
+	 * @param classesStr formatted graph-class pairs in format <graph><class>,<graph><class>,...,<graph><class>
 	 * @param uuid uuid used to identify web request
 	 * @param test flag indicating whether the business logic should be run in test mode
 	 * 
@@ -40,7 +41,7 @@ public class SubscribeService {
 	 */
 	public void doSubscribe(String iriStr, String classesStr, String uuid, Boolean test) throws ServiceException {
 		IRI identifier = null;
-		List<IRI> classes = new ArrayList<IRI>(); 
+		List<GraphClassPair> pairs = new ArrayList<GraphClassPair>();
 		
 		//Ensure not null
 		if (iriStr == null || classesStr == null) {
@@ -57,12 +58,12 @@ public class SubscribeService {
 		}
 		
 		//Validate input classesStr
-		String[] classesArray = classesStr.split(",");
-		for (String each : classesArray) {
+		String[] pairsArray = classesStr.split(",");
+		for (String each : pairsArray) {
 			try {
-				IRI eachClass = new IRI(each, uuid);
+				GraphClassPair eachPair = new GraphClassPair(each, uuid);
 				logger.info("[" + uuid + "] " + each + " is valid");
-				classes.add(eachClass);
+				pairs.add(eachPair);
 			} catch (ParameterException e) {
 				throw new ServiceException(e.getMessage());
 			}
@@ -70,11 +71,11 @@ public class SubscribeService {
 		
 		//Form a quad to call insert
 		List<Quad> quads = new ArrayList<Quad>();
-		for (IRI eachClass : classes) {
-			String rawString = "<" + systemProps.getProperty("agraph.server.graph.subscribe") + ">" 
+		for (GraphClassPair eachPair : pairs) {
+			String rawString = "<" + eachPair.getGraph() + ">" 
 								+ "<" + identifier.getIri() + ">"
 								+ "<" + systemProps.getProperty("agraph.server.graph.subscribe.predicate") + ">"
-								+ "<" + eachClass.getIri() + ">";
+								+ "<" + eachPair.getClassIRI() + ">";
 			try {
 				quads.add(new Quad(rawString, uuid));
 			} catch (ParameterException e) {
@@ -119,7 +120,7 @@ public class SubscribeService {
 		if (classes != null) {
 			for (String eachClass : classes) {
 				try {
-					subscribers = dao.getSubscriberIRI(eachClass, uuid);
+					subscribers = dao.getSubscriberIRI(graph, eachClass, uuid);
 				} catch (AGraphDataAccessException e) {
 					throw new ServiceException(e.getMessage());
 				}

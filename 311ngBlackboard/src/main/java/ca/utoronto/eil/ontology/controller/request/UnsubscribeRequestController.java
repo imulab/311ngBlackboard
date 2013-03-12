@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.utoronto.eil.ontology.model.AuthenticationException;
 import ca.utoronto.eil.ontology.model.Response;
+import ca.utoronto.eil.ontology.model.ResponseImpl;
 import ca.utoronto.eil.ontology.model.ServiceException;
 import ca.utoronto.eil.ontology.service.UnsubscribeService;
 import ca.utoronto.eil.ontology.service.UserService;
@@ -61,7 +62,7 @@ public class UnsubscribeRequestController {
 			@RequestParam(value = "classes", required = true) String classes,
 			@RequestParam(value = "test", required = false) Boolean test) {
 
-		Response response = new Response();
+		ResponseImpl response = new ResponseImpl();
 		logger.info("unsubscribe request received, assigned UUID = ["
 				+ response.getUuid() + "]");
 

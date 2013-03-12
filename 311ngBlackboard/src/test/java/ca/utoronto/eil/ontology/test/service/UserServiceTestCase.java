@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import ca.utoronto.eil.ontology.model.AuthenticationException;
 import ca.utoronto.eil.ontology.model.Response;
+import ca.utoronto.eil.ontology.model.ResponseImpl;
 import ca.utoronto.eil.ontology.service.UserService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -21,7 +22,7 @@ public class UserServiceTestCase {
 	@Test
 	public void testSuccessfulAuth() {
 		
-		Response response = new Response();
+		Response response = new ResponseImpl();
 		
 		String username = "weinanqiu";
 		String password = "19890117";
@@ -41,7 +42,7 @@ public class UserServiceTestCase {
 	@Test
 	public void testFailAuthWrongUsername() {
 		
-		Response response = new Response();
+		Response response = new ResponseImpl();
 		
 		String username = "weinanqiu_wrong";
 		String password = "19890117";
@@ -61,7 +62,7 @@ public class UserServiceTestCase {
 	
 	@Test
 	public void testFailAuthWrongPassword() {
-		Response response = new Response();
+		Response response = new ResponseImpl();
 		
 		String username = "weinanqiu";
 		String password = "19890117_wrong";

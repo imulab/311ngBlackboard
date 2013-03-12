@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.utoronto.eil.ontology.model.AuthenticationException;
 import ca.utoronto.eil.ontology.model.Response;
+import ca.utoronto.eil.ontology.model.ResponseImpl;
 import ca.utoronto.eil.ontology.model.ServiceException;
 import ca.utoronto.eil.ontology.service.PublishService;
 import ca.utoronto.eil.ontology.service.UserService;
@@ -44,9 +45,10 @@ public class PublishRequestController {
 			@RequestParam(value="username", required=true) String username,
 			@RequestParam(value="password", required=true) String password,
 			@RequestParam(value="quads", required=true) String quads,
-			@RequestParam(value="test", required=false) Boolean test) {
+			@RequestParam(value="test", required=false) Boolean test,
+			@RequestParam(value="enableNotify", required=false) Boolean enableNotify) {
 		
-		Response response = new Response();
+		ResponseImpl response = new ResponseImpl();
 		logger.info("publish request received, assigned UUID = [" + response.getUuid() + "]");
 		
 		//Authenticate user
@@ -60,7 +62,10 @@ public class PublishRequestController {
 		
 		//Publish
 		try {
-			publishService.doPublish(quads, response.getUuid(), (test == null) ? (false) : (test));
+			publishService.doPublish(quads, 
+					response.getUuid(), 
+					(test == null) ? (false) : (test), 
+					(enableNotify == null) ? (false) : (enableNotify));
 		} catch (ServiceException e) {
 			response.resolveException(e, codes);
 			logger.info("[" + response.getUuid() + "] request aborted");

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.utoronto.eil.ontology.model.Response;
+import ca.utoronto.eil.ontology.model.ResponseImpl;
 
 import com.google.gson.Gson;
 
@@ -30,7 +31,7 @@ public class NotificationReceiveRequestController {
 	public @ResponseBody String receiveNotification(
 			@RequestParam(value="quads", required=true) String quads) {
 		
-		Response response = new Response();
+		ResponseImpl response = new ResponseImpl();
 		response.setState("success");
 		
 		logger.info(">>> notification test request received, assigned UUID = [" + response.getUuid() + "]");

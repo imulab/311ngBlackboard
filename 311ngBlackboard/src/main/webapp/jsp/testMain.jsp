@@ -9,6 +9,10 @@
 </head>
 
 <body style="margin-top: 20px; margin-left: 20px">
+	
+	Page is under development
+	
+	<!-- 
 	<div>
 		<ul>
 			<li>	
@@ -25,6 +29,7 @@
 			</li>
 		</ul>
 	</div>
+	 -->
 </body>
 
 </html>

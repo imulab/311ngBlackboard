@@ -5,6 +5,9 @@
 <html>
 <head>
 	<title>311ngBlackboard:test:publish</title>
+	
+	<script src="js/jquery-1.8.2.min.js"></script>
+	<script src="js/json2.js"></script>
 </head>
 
 <body style="margin-top: 20px; margin-left: 20px">

@@ -11,8 +11,11 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.Query;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
@@ -20,12 +23,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
+import com.franz.agraph.jena.AGGraph;
+import com.franz.agraph.jena.AGGraphMaker;
+import com.franz.agraph.jena.AGModel;
+import com.franz.agraph.jena.AGQuery;
+import com.franz.agraph.jena.AGQueryExecutionFactory;
+import com.franz.agraph.jena.AGQueryFactory;
 import com.franz.agraph.repository.AGRepositoryConnection;
+import com.franz.agraph.repository.AGTupleQuery;
 import com.franz.agraph.repository.AGValueFactory;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import ca.utoronto.eil.ontology.model.AGraphDataAccessException;
 import ca.utoronto.eil.ontology.model.IRI;
 import ca.utoronto.eil.ontology.model.Quad;
+import ca.utoronto.eil.ontology.model.QueryResult;
+import ca.utoronto.eil.ontology.model.QueryResultImpl;
 
 @Repository("AGraphDao")
 public class AGraphDao extends AGraphBaseDao {
@@ -37,7 +53,10 @@ public class AGraphDao extends AGraphBaseDao {
 	@Autowired
 	@Qualifier("system_fact")
 	private Properties systemProps;
-
+	
+	private static final String GET_IMMEDIATE_CLASS= "SELECT ?o { <?s> <?p> ?o }";
+	private static final String GET_SUBSCRIBER= "SELECT ?s { ?s <?p> <?o> }";
+	
 	public AGraphDao() {
 	}
 	
@@ -267,34 +286,39 @@ public class AGraphDao extends AGraphBaseDao {
 	public List<String> getImmediateClass(IRI instanceSubject,
 			String graphName, String uuid) throws AGraphDataAccessException {
 		AGRepositoryConnection conn = super.getConnection(uuid);
-		AGValueFactory vf = conn.getRepository().getValueFactory();
+		AGGraphMaker graphMaker = new AGGraphMaker(conn);
+		AGGraph graph = null;
 		List<String> classes = new ArrayList<String>();
-
-		// Prepare
-		URI subject = vf.createURI(instanceSubject.getIri());
-		URI graph = null;
-
-		if (graphName != null && graphName.trim().length() > 0) {
-			graph = vf.createURI(graphName);
+		
+		// Open Graph
+		if (graphName == null || graphName.trim().length() == 0) {
+			graph = graphMaker.openGraph(); // Open default
+		} else {
+			graph = graphMaker.openGraph(graphName); // Open named
 		}
-
-		// Query
-		try {
-			RepositoryResult<Statement> results = conn.getStatements(subject,
-					RDFS.SUBCLASSOF, null, false, graph);
-			logger.info("[" + uuid + "] " + results.asList().size()
-					+ " query results fetched");
-			for (Statement st : results.asList()) {
-				classes.add(st.getObject().toString());
-			}
-		} catch (RepositoryException e) {
-			logger.error("[" + uuid + "] error getting immediate class", e);
-			super.closeConnection(conn, uuid);
-			throw new AGraphDataAccessException("msg:[E0024] "
-					+ codes.getProperty("E0024")
-					+ " [Native Exception Message] " + e.getMessage());
+		
+		AGModel model = new AGModel(graph);
+		
+		//Construct query
+		String query = GET_IMMEDIATE_CLASS
+				.replace("?s", instanceSubject.getIri())
+				.replace("?p", RDFS.SUBCLASSOF.toString());
+		AGQuery sparql = AGQueryFactory.create(query);
+		
+		//Execute query
+		QueryExecution qe = AGQueryExecutionFactory.create(sparql, model);
+		ResultSet results = qe.execSelect();
+		
+		//Convert result
+		int numOfResults = 0;
+		while (results.hasNext()) {
+			QuerySolution result = results.next();
+			RDFNode o = result.get("o");
+			classes.add(o.toString());
+			numOfResults++;
 		}
-
+		logger.info("[" + uuid + "] " + numOfResults + " results fetched");
+		
 		// close connection and return
 		super.closeConnection(conn, uuid);
 		return classes;
@@ -309,38 +333,65 @@ public class AGraphDao extends AGraphBaseDao {
 	 * 
 	 * @throws AGraphDataAccessException
 	 */
-	public List<String> getSubscriberIRI(String className, String uuid)
+	public List<String> getSubscriberIRI(String graphName, String className, String uuid)
 			throws AGraphDataAccessException {
 		AGRepositoryConnection conn = super.getConnection(uuid);
-		AGValueFactory vf = conn.getRepository().getValueFactory();
+		AGGraphMaker graphMaker = new AGGraphMaker(conn);
 		List<String> subscribers = new ArrayList<String>();
+		String SUBSCRIBES = systemProps
+				.getProperty("agraph.server.graph.subscribe.predicate");
+		AGGraph graph = graphMaker.openGraph(graphName);
+		AGModel model = new AGModel(graph);
+		
+		//Construct query
+		String query = GET_SUBSCRIBER
+				.replace("?p", SUBSCRIBES)
+				.replace("?o", className);
+		AGQuery sparql = AGQueryFactory.create(query);
 
-		// Prepare
-		URI object = vf.createURI(className);
-		URI predicate = vf.createURI(systemProps
-				.getProperty("agraph.server.graph.subscribe.predicate"));
-		URI graph = vf.createURI(systemProps
-				.getProperty("agraph.server.graph.subscribe"));
-
-		// Query
-		try {
-			RepositoryResult<Statement> results = conn.getStatements(null,
-					predicate, object, false, graph);
-			logger.info("[" + uuid + "] " + results.asList().size()
-					+ " query results fetched");
-			for (Statement st : results.asList()) {
-				subscribers.add(st.getSubject().toString());
-			}
-		} catch (RepositoryException e) {
-			logger.error("[" + uuid + "] error getting subsriber IRI", e);
-			super.closeConnection(conn, uuid);
-			throw new AGraphDataAccessException("msg:[E0025] "
-					+ codes.getProperty("E0025")
-					+ " [Native Exception Message] " + e.getMessage());
+		//Execute query
+		QueryExecution qe = AGQueryExecutionFactory.create(sparql, model);
+		ResultSet results = qe.execSelect();
+		
+		//Convert result
+		int numOfResults = 0;
+		while (results.hasNext()) {
+			QuerySolution result = results.next();
+			RDFNode s = result.get("s");
+			subscribers.add(s.toString());
+			numOfResults++;
 		}
-
+		logger.info("[" + uuid + "] " + numOfResults + " results fetched");
+		
 		// close connection and return
 		super.closeConnection(conn, uuid);
 		return subscribers;
+	}
+	
+	public QueryResult runQuery(String query, String uuid) throws AGraphDataAccessException {
+		QueryResultImpl qResult = new QueryResultImpl();
+		
+		logger.info("[" + uuid + "] " + "Running query: " + query);
+		
+		AGRepositoryConnection conn = super.getConnection(uuid);
+		AGTupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		
+		try {
+			TupleQueryResult result = tupleQuery.evaluate();
+			while (result.hasNext()) {
+				BindingSet bindingSet = result.next();
+				qResult.addResult(bindingSet);
+			}
+			qResult.setQueryExecutionStatus(true);
+			logger.info("[" + uuid + "] " + "Got and converted " + qResult.getResultCount() + " results");
+		} catch (QueryEvaluationException e) {
+			logger.error("[" + uuid + "] " + "Query error: " + e.getMessage(), e);
+			qResult.setQueryExecutionStatus(false);
+			qResult.setExceptionMessage(e.getMessage());
+		}
+		
+		// close connection and return
+		super.closeConnection(conn, uuid);
+		return qResult;
 	}
 }

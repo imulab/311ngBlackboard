@@ -8,6 +8,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ca.utoronto.eil.ontology.model.ParameterException;
 import ca.utoronto.eil.ontology.model.Quad;
 import ca.utoronto.eil.ontology.model.Response;
+import ca.utoronto.eil.ontology.model.ResponseImpl;
 
 import junit.framework.TestCase;
 
@@ -62,7 +63,7 @@ public class QuadTestCase extends TestCase {
 	}
 	
 	private Quad testModel(String rawString) throws ParameterException {
-		Response response = new Response();
+		Response response = new ResponseImpl();
 		Quad model = new Quad(rawString, response.getUuid());
 		return model;
 	}

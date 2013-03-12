@@ -8,6 +8,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ca.utoronto.eil.ontology.model.IRI;
 import ca.utoronto.eil.ontology.model.ParameterException;
 import ca.utoronto.eil.ontology.model.Response;
+import ca.utoronto.eil.ontology.model.ResponseImpl;
 
 import junit.framework.TestCase;
 
@@ -58,7 +59,7 @@ public class IRITestCase extends TestCase {
 	}
 	
 	private IRI testModel(String rawString) throws ParameterException {
-		Response response = new Response();
+		Response response = new ResponseImpl();
 		IRI model = new IRI(rawString, response.getUuid());
 		return model;
 	}
