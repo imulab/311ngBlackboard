@@ -65,7 +65,7 @@ public class PublishRequestController {
 			publishService.doPublish(quads, 
 					response.getUuid(), 
 					(test == null) ? (false) : (test), 
-					(enableNotify == null) ? (false) : (enableNotify));
+					(enableNotify == null) ? (true) : (enableNotify));
 		} catch (ServiceException e) {
 			response.resolveException(e, codes);
 			logger.info("[" + response.getUuid() + "] request aborted");

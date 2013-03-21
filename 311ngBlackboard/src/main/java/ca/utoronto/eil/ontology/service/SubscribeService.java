@@ -109,7 +109,13 @@ public class SubscribeService {
 		//Step 1: Get all immediate super classes
 		try {
 			IRI instanceIRI = new IRI("<" + subject + ">", uuid);
+			
+			logger.info("[" + uuid + "] Getting super class for " + subject);
+			
 			classes = dao.getImmediateClass(instanceIRI, graph, uuid);
+			
+			logger.info("[" + uuid + "] Found " + classes.size() + " class for " + subject);
+			
 		} catch (ParameterException e) {
 			throw new ServiceException(e.getMessage());
 		} catch (AGraphDataAccessException e1) {
@@ -120,7 +126,12 @@ public class SubscribeService {
 		if (classes != null) {
 			for (String eachClass : classes) {
 				try {
+					
+					logger.info("[" + uuid + "] Looking for subscribers for class " + eachClass);
+					
 					subscribers = dao.getSubscriberIRI(graph, eachClass, uuid);
+					
+					logger.info("[" + uuid + "] Found " + subscribers.size() + " for class " + eachClass);
 				} catch (AGraphDataAccessException e) {
 					throw new ServiceException(e.getMessage());
 				}

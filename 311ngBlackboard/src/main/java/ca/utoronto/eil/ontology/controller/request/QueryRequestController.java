@@ -61,6 +61,8 @@ public class QueryRequestController {
 		logger.info("query request received, assigned UUID = ["
 				+ response.getUuid() + "]");
 
+		System.out.println("Received!!!");
+		
 		// Authenticate user
 		try {
 			userService.doAuthenticate(username, password, response.getUuid());
@@ -74,6 +76,12 @@ public class QueryRequestController {
 		try {
 			QueryResult qResult = queryService.doQuery(query, response.getUuid());
 			response.addObject("query.result", qResult);
+			
+			if (qResult.getQueryExecutionStatus())
+				response.setState("success");
+			else
+				response.setState("fail");
+			
 		} catch (ServiceException e) {
 			response.resolveException(e, codes);
 			logger.info("[" + response.getUuid() + "] request aborted");

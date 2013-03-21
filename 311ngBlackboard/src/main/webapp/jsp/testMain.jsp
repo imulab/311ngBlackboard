@@ -12,7 +12,6 @@
 	
 	Page is under development
 	
-	<!-- 
 	<div>
 		<ul>
 			<li>	
@@ -29,7 +28,6 @@
 			</li>
 		</ul>
 	</div>
-	 -->
 </body>
 
 </html>

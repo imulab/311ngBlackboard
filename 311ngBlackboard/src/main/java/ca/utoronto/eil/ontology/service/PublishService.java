@@ -97,9 +97,12 @@ public class PublishService {
 				
 				String graphToLook = eachGroupBy.get(0).getGraph();
 				
+				logger.info("[" + uuid + "]" + " Looking for subscribers of " + eachGroupBy.get(0).getSubject());
+				
 				List<String> subscriberIRIs = subscribeService
 						.getImmediateSubscribers(graphToLook,
 								eachGroupBy.get(0).getSubject(), uuid);
+				
 				logger.info("[" + uuid + "] found " + subscriberIRIs.size()
 						+ " immediate subscribers for "
 						+ eachGroupBy.get(0).getSubject());

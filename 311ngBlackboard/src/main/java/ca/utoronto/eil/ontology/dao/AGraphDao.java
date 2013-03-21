@@ -3,13 +3,16 @@ package ca.utoronto.eil.ontology.dao;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Query;
@@ -302,7 +305,7 @@ public class AGraphDao extends AGraphBaseDao {
 		//Construct query
 		String query = GET_IMMEDIATE_CLASS
 				.replace("?s", instanceSubject.getIri())
-				.replace("?p", RDFS.SUBCLASSOF.toString());
+				.replace("?p", RDF.TYPE.toString());
 		AGQuery sparql = AGQueryFactory.create(query);
 		
 		//Execute query
@@ -350,6 +353,8 @@ public class AGraphDao extends AGraphBaseDao {
 		AGQuery sparql = AGQueryFactory.create(query);
 
 		//Execute query
+		logger.info("[" + uuid + "] Executing " + query);
+		
 		QueryExecution qe = AGQueryExecutionFactory.create(sparql, model);
 		ResultSet results = qe.execSelect();
 		
@@ -378,9 +383,18 @@ public class AGraphDao extends AGraphBaseDao {
 		
 		try {
 			TupleQueryResult result = tupleQuery.evaluate();
+			List<String> bindingNames = result.getBindingNames();
+			qResult.setBindingNames(bindingNames);
+			
 			while (result.hasNext()) {
-				BindingSet bindingSet = result.next();
-				qResult.addResult(bindingSet);
+				BindingSet eachResult = result.next();
+				Map<String, String> extracted = new HashMap<String, String>();
+				
+				for (String eachName : bindingNames) {
+					extracted.put(eachName, eachResult.getBinding(eachName).getValue().stringValue());
+				}
+				
+				qResult.addResult(extracted);
 			}
 			qResult.setQueryExecutionStatus(true);
 			logger.info("[" + uuid + "] " + "Got and converted " + qResult.getResultCount() + " results");

@@ -1,11 +1,18 @@
 package ca.utoronto.eil.ontology.service;
 
+import info.aduna.io.IOUtil;
+
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.log4j.Logger;
@@ -36,18 +43,31 @@ public class NotificationService {
 	public void doNotification(String destinationIRI, String quadsStr, String uuid, Boolean test) throws ServiceException {
 		try {
 			
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost(destinationIRI);
-			BasicHttpParams param = new BasicHttpParams();
-			param.setParameter("quads", quadsStr);
-			post.setParams(param);
+			URIBuilder builder = new URIBuilder();
+			builder.setScheme("http").setHost("localhost:8080/311ngBlackboard")
+					.setPath("/rest/request/test/notification")
+					.setParameter("quads", quadsStr);
 			
-			if (!test) {
-				client.execute(post);
-				logger.info("[" + uuid + "] " + destinationIRI + " notified");
-			} else {
-				logger.info("[" + uuid + "] " + destinationIRI + " skipped due to test mode");
+			URI uri = null;
+			try {
+				uri = builder.build();
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
 			}
+			
+			HttpClient client = new DefaultHttpClient();
+			HttpPost httppost = new HttpPost(uri);
+			HttpResponse response = null;
+			try {
+				response = client.execute(httppost);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+				
+			logger.info("[" + uuid + "] Response: " + body);
+			
 		
 		} catch (IllegalArgumentException e) {
 			logger.error("[" + uuid + "] illegal argument: " + destinationIRI + ".");

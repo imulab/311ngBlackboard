@@ -98,8 +98,8 @@ public class AgraphListStmtTestCase extends TestCase {
 		String queryStr = "SELECT ?o WHERE {GRAPH <http://www.test2.org/devGraph> { <http://www.test2.org/testInstance2> <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?o }}";
 		String queryStr2 = "SELECT ?o WHERE { <http://www.test2.org/testInstance2> <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?o }";
 		String queryStr3 = "SELECT ?g ?s ?p ?o { GRAPH ?g { ?s ?p ?o } }";
-		//String queryStr = "SELECT ?s ?p ?o {?s ?p ?o}";
-		AGQuery sparql = AGQueryFactory.create(queryStr3);
+		String queryStr4 = "SELECT ?s ?p ?o {?s ?p ?o}";
+		AGQuery sparql = AGQueryFactory.create(queryStr4);
 		
 		//StmtIterator itr = model.listStatements();
 		
