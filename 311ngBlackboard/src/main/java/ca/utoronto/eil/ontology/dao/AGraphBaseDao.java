@@ -42,7 +42,7 @@ public class AGraphBaseDao {
 				logger.error("[" + uuid + "] Repository is NOT writable.");
 				throw new AGraphDataAccessException("code:E0017");
 			} else {
-				logger.info("[" + uuid + "] Repository "
+				logger.debug("[" + uuid + "] Repository "
 						+ ((repo.isWritable()) ? ("is") : ("is NOT"))
 						+ " writable.");
 			}
@@ -92,7 +92,7 @@ public class AGraphBaseDao {
 				systemProps.getProperty("agraph.server.username"),
 				systemProps.getProperty("agraph.server.password"));
 
-		logger.info("[" + uuid + "] Connecting to "
+		logger.debug("[" + uuid + "] Connecting to "
 				+ systemProps.getProperty("agraph.server.url")
 				+ " using account "
 				+ systemProps.getProperty("agraph.server.username"));
@@ -105,13 +105,13 @@ public class AGraphBaseDao {
 		String catalogName = systemProps.getProperty("agraph.server.catalog");
 		try {
 			if (catalogName == null || catalogName.trim().length() == 0) {
-				logger.info("[" + uuid + "] Getting repository "
+				logger.debug("[" + uuid + "] Getting repository "
 						+ systemProps.getProperty("agraph.server.repo")
 						+ " in root catalog");
 				repo = server.getRootCatalog().openRepository(
 						systemProps.getProperty("agraph.server.repo"));
 			} else {
-				logger.info("[" + uuid + "] Getting repository "
+				logger.debug("[" + uuid + "] Getting repository "
 						+ systemProps.getProperty("agraph.server.repo")
 						+ " in catalog " + catalogName);
 				repo = server.getCatalog("catalogName").openRepository(
@@ -125,14 +125,14 @@ public class AGraphBaseDao {
 
 		AGRepositoryConnection conn = null;
 		try {
-			logger.info("[" + uuid + "] Establishing connection to repository");
+			logger.debug("[" + uuid + "] Establishing connection to repository");
 			conn = repo.getConnection();
 		} catch (RepositoryException e) {
 			logger.error("[" + uuid + "] Connect repository failed.", e);
 			throw new AGraphDataAccessException("code:E0016", e);
 		}
 
-		logger.info("[" + uuid + "] Successfully connected to repository");
+		logger.debug("[" + uuid + "] Successfully connected to repository");
 		return conn;
 	}
 }

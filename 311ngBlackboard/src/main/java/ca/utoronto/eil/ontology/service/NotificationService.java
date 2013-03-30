@@ -44,9 +44,7 @@ public class NotificationService {
 		try {
 			
 			URIBuilder builder = new URIBuilder();
-			builder.setScheme("http").setHost("localhost:8080/311ngBlackboard")
-					.setPath("/rest/request/test/notification")
-					.setParameter("quads", quadsStr);
+			builder.setPath(destinationIRI).setParameter("quads", quadsStr);
 			
 			URI uri = null;
 			try {

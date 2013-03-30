@@ -56,13 +56,13 @@ public class AGraphDao extends AGraphBaseDao {
 	@Autowired
 	@Qualifier("system_fact")
 	private Properties systemProps;
-	
-	private static final String GET_IMMEDIATE_CLASS= "SELECT ?o { <?s> <?p> ?o }";
-	private static final String GET_SUBSCRIBER= "SELECT ?s { ?s <?p> <?o> }";
-	
+
+	private static final String GET_IMMEDIATE_CLASS = "SELECT ?o { <?s> <?p> ?o }";
+	private static final String GET_SUBSCRIBER = "SELECT ?s { ?s <?p> <?o> }";
+
 	public AGraphDao() {
 	}
-	
+
 	/**
 	 * Insert a list of quads into the connected repository.
 	 * 
@@ -135,7 +135,7 @@ public class AGraphDao extends AGraphBaseDao {
 			}
 
 			try {
-				logger.info("[" + uuid + "] Inserting quad...");
+				logger.debug("[" + uuid + "] Inserting quad...");
 				conn.add(subject, predicate, ((objectIsLiteral) ? (objectAsLit)
 						: (objectAsURI)), graph);
 			} catch (RepositoryException e) {
@@ -159,7 +159,7 @@ public class AGraphDao extends AGraphBaseDao {
 					+ " [Native Exception Message] " + e.getMessage());
 		}
 
-		logger.info("[" + uuid + "] change(s) successful "
+		logger.debug("[" + uuid + "] change(s) successful "
 				+ ((test) ? ("but not") : ("and")) + " committed");
 
 		// Close connection
@@ -238,9 +238,10 @@ public class AGraphDao extends AGraphBaseDao {
 			}
 
 			try {
-				logger.info("[" + uuid + "] Removing quad...");
-				conn.remove(subject, predicate, ((objectIsLiteral) ? (objectAsLit)
-						: (objectAsURI)), graph);
+				logger.debug("[" + uuid + "] Removing quad...");
+				conn.remove(subject, predicate,
+						((objectIsLiteral) ? (objectAsLit) : (objectAsURI)),
+						graph);
 			} catch (RepositoryException e) {
 				logger.error("[" + uuid + "] remove quad failed", e);
 				super.closeConnection(conn, uuid);
@@ -262,7 +263,7 @@ public class AGraphDao extends AGraphBaseDao {
 					+ " [Native Exception Message] " + e.getMessage());
 		}
 
-		logger.info("[" + uuid + "] change(s) successful "
+		logger.debug("[" + uuid + "] change(s) successful "
 				+ ((test) ? ("but not") : ("and")) + " committed");
 
 		// Close connection
@@ -272,7 +273,7 @@ public class AGraphDao extends AGraphBaseDao {
 	/**
 	 * Returns the immediate class IRI in string format of the subjet IRI
 	 * provided. Expects a relationship of <instance
-	 * subject><RDFS.SUBCLASSOF><class>.
+	 * subject><RDF.TYPE><class>.
 	 * 
 	 * @param instanceSubject
 	 *            subject instance
@@ -292,27 +293,26 @@ public class AGraphDao extends AGraphBaseDao {
 		AGGraphMaker graphMaker = new AGGraphMaker(conn);
 		AGGraph graph = null;
 		List<String> classes = new ArrayList<String>();
-		
+
 		// Open Graph
 		if (graphName == null || graphName.trim().length() == 0) {
 			graph = graphMaker.openGraph(); // Open default
 		} else {
 			graph = graphMaker.openGraph(graphName); // Open named
 		}
-		
+
 		AGModel model = new AGModel(graph);
-		
-		//Construct query
-		String query = GET_IMMEDIATE_CLASS
-				.replace("?s", instanceSubject.getIri())
-				.replace("?p", RDF.TYPE.toString());
+
+		// Construct query
+		String query = GET_IMMEDIATE_CLASS.replace("?s",
+				instanceSubject.getIri()).replace("?p", RDF.TYPE.toString());
 		AGQuery sparql = AGQueryFactory.create(query);
-		
-		//Execute query
+
+		// Execute query
 		QueryExecution qe = AGQueryExecutionFactory.create(sparql, model);
 		ResultSet results = qe.execSelect();
-		
-		//Convert result
+
+		// Convert result
 		int numOfResults = 0;
 		while (results.hasNext()) {
 			QuerySolution result = results.next();
@@ -320,8 +320,59 @@ public class AGraphDao extends AGraphBaseDao {
 			classes.add(o.toString());
 			numOfResults++;
 		}
-		logger.info("[" + uuid + "] " + numOfResults + " results fetched");
-		
+		logger.debug("[" + uuid + "] " + numOfResults + " results fetched");
+
+		// close connection and return
+		super.closeConnection(conn, uuid);
+		return classes;
+	}
+
+	/**
+	 * Returns the immediate super class IRI in string format of the subject IRI
+	 * provided. Expects a relationship of <class
+	 * subject><RDFS.SUBCLASSOF><class>.
+	 * 
+	 * @param classSubject
+	 * @param graphName
+	 * @param uuid
+	 * @return
+	 * @throws AGraphDataAccessException
+	 */
+	public List<String> getSuperClass(IRI classSubject, String graphName,
+			String uuid) throws AGraphDataAccessException {
+		AGRepositoryConnection conn = super.getConnection(uuid);
+		AGGraphMaker graphMaker = new AGGraphMaker(conn);
+		AGGraph graph = null;
+		List<String> classes = new ArrayList<String>();
+
+		// Open Graph
+		if (graphName == null || graphName.trim().length() == 0) {
+			graph = graphMaker.openGraph(); // Open default
+		} else {
+			graph = graphMaker.openGraph(graphName); // Open named
+		}
+
+		AGModel model = new AGModel(graph);
+
+		// Construct query
+		String query = GET_IMMEDIATE_CLASS.replace("?s", classSubject.getIri())
+				.replace("?p", RDFS.SUBCLASSOF.stringValue());
+		AGQuery sparql = AGQueryFactory.create(query);
+
+		// Execute query
+		QueryExecution qe = AGQueryExecutionFactory.create(sparql, model);
+		ResultSet results = qe.execSelect();
+
+		// Convert result
+		int numOfResults = 0;
+		while (results.hasNext()) {
+			QuerySolution result = results.next();
+			RDFNode o = result.get("o");
+			classes.add(o.toString());
+			numOfResults++;
+		}
+		logger.debug("[" + uuid + "] " + numOfResults + " results fetched");
+
 		// close connection and return
 		super.closeConnection(conn, uuid);
 		return classes;
@@ -330,14 +381,16 @@ public class AGraphDao extends AGraphBaseDao {
 	/**
 	 * Returns the subscriber IRIs of the class provided by the className
 	 * 
-	 * @param className class name
-	 * @param uuid uuid of web request
+	 * @param className
+	 *            class name
+	 * @param uuid
+	 *            uuid of web request
 	 * @return a list of subscribers IRI in string format
 	 * 
 	 * @throws AGraphDataAccessException
 	 */
-	public List<String> getSubscriberIRI(String graphName, String className, String uuid)
-			throws AGraphDataAccessException {
+	public List<String> getSubscriberIRI(String graphName, String className,
+			String uuid) throws AGraphDataAccessException {
 		AGRepositoryConnection conn = super.getConnection(uuid);
 		AGGraphMaker graphMaker = new AGGraphMaker(conn);
 		List<String> subscribers = new ArrayList<String>();
@@ -345,20 +398,19 @@ public class AGraphDao extends AGraphBaseDao {
 				.getProperty("agraph.server.graph.subscribe.predicate");
 		AGGraph graph = graphMaker.openGraph(graphName);
 		AGModel model = new AGModel(graph);
-		
-		//Construct query
-		String query = GET_SUBSCRIBER
-				.replace("?p", SUBSCRIBES)
-				.replace("?o", className);
+
+		// Construct query
+		String query = GET_SUBSCRIBER.replace("?p", SUBSCRIBES).replace("?o",
+				className);
 		AGQuery sparql = AGQueryFactory.create(query);
 
-		//Execute query
-		logger.info("[" + uuid + "] Executing " + query);
-		
+		// Execute query
+		logger.debug("[" + uuid + "] Executing " + query);
+
 		QueryExecution qe = AGQueryExecutionFactory.create(sparql, model);
 		ResultSet results = qe.execSelect();
-		
-		//Convert result
+
+		// Convert result
 		int numOfResults = 0;
 		while (results.hasNext()) {
 			QuerySolution result = results.next();
@@ -366,44 +418,49 @@ public class AGraphDao extends AGraphBaseDao {
 			subscribers.add(s.toString());
 			numOfResults++;
 		}
-		logger.info("[" + uuid + "] " + numOfResults + " results fetched");
-		
+		logger.debug("[" + uuid + "] " + numOfResults + " results fetched");
+
 		// close connection and return
 		super.closeConnection(conn, uuid);
 		return subscribers;
 	}
-	
-	public QueryResult runQuery(String query, String uuid) throws AGraphDataAccessException {
+
+	public QueryResult runQuery(String query, String uuid)
+			throws AGraphDataAccessException {
 		QueryResultImpl qResult = new QueryResultImpl();
-		
+
 		logger.info("[" + uuid + "] " + "Running query: " + query);
-		
+
 		AGRepositoryConnection conn = super.getConnection(uuid);
-		AGTupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
-		
+		AGTupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL,
+				query);
+
 		try {
 			TupleQueryResult result = tupleQuery.evaluate();
 			List<String> bindingNames = result.getBindingNames();
 			qResult.setBindingNames(bindingNames);
-			
+
 			while (result.hasNext()) {
 				BindingSet eachResult = result.next();
 				Map<String, String> extracted = new HashMap<String, String>();
-				
+
 				for (String eachName : bindingNames) {
-					extracted.put(eachName, eachResult.getBinding(eachName).getValue().stringValue());
+					extracted.put(eachName, eachResult.getBinding(eachName)
+							.getValue().stringValue());
 				}
-				
+
 				qResult.addResult(extracted);
 			}
 			qResult.setQueryExecutionStatus(true);
-			logger.info("[" + uuid + "] " + "Got and converted " + qResult.getResultCount() + " results");
+			logger.debug("[" + uuid + "] " + "Got and converted "
+					+ qResult.getResultCount() + " results");
 		} catch (QueryEvaluationException e) {
-			logger.error("[" + uuid + "] " + "Query error: " + e.getMessage(), e);
+			logger.error("[" + uuid + "] " + "Query error: " + e.getMessage(),
+					e);
 			qResult.setQueryExecutionStatus(false);
 			qResult.setExceptionMessage(e.getMessage());
 		}
-		
+
 		// close connection and return
 		super.closeConnection(conn, uuid);
 		return qResult;

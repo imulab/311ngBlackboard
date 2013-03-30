@@ -104,9 +104,9 @@ public class PublishService {
 								eachGroupBy.get(0).getSubject(), uuid);
 				
 				logger.info("[" + uuid + "] found " + subscriberIRIs.size()
-						+ " immediate subscribers for "
+						+ " subscribers for "
 						+ eachGroupBy.get(0).getSubject());
-
+				
 				if (subscriberIRIs != null && subscriberIRIs.size() > 0) {
 					String quadListStr = QuadUtil.convertToString(eachGroupBy);
 
