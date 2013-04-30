@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import ca.utoronto.eil.ontology.dao.AGraphDao;
 import ca.utoronto.eil.ontology.model.AGraphDataAccessException;
+import ca.utoronto.eil.ontology.model.GraphClassPair;
 import ca.utoronto.eil.ontology.model.IRI;
 import ca.utoronto.eil.ontology.model.ParameterException;
 import ca.utoronto.eil.ontology.model.Quad;
@@ -50,7 +51,8 @@ public class UnsubscribeService {
 			Boolean test) throws ServiceException {
 		IRI identifier = null;
 		List<IRI> classes = new ArrayList<IRI>();
-
+		List<GraphClassPair> pairs = new ArrayList<GraphClassPair>();
+		
 		// Ensure not null
 		if (iriStr == null || classesStr == null) {
 			logger.error("[" + uuid + "] input is null.");
@@ -65,31 +67,57 @@ public class UnsubscribeService {
 			throw new ServiceException(e.getMessage());
 		}
 
-		// Validate input classesStr
-		String[] classesArray = classesStr.split(",");
-		for (String each : classesArray) {
+//		// Validate input classesStr
+//		String[] classesArray = classesStr.split(",");
+//		for (String each : classesArray) {
+//			try {
+//				IRI eachClass = new IRI(each, uuid);
+//				logger.info("[" + uuid + "] " + each + " is valid");
+//				classes.add(eachClass);
+//			} catch (ParameterException e) {
+//				throw new ServiceException(e.getMessage());
+//			}
+//		}
+		
+		//Validate input classesStr
+		String[] pairsArray = classesStr.split(",");
+		for (String each : pairsArray) {
 			try {
-				IRI eachClass = new IRI(each, uuid);
+				GraphClassPair eachPair = new GraphClassPair(each, uuid);
 				logger.info("[" + uuid + "] " + each + " is valid");
-				classes.add(eachClass);
+				pairs.add(eachPair);
 			} catch (ParameterException e) {
 				throw new ServiceException(e.getMessage());
 			}
 		}
 
-		// Form a quad to call remove
+//		// Form a quad to call remove
+//		List<Quad> quads = new ArrayList<Quad>();
+//		for (IRI eachClass : classes) {
+//			String rawString = "<"
+//					+ systemProps.getProperty("agraph.server.graph.subscribe")
+//					+ ">"
+//					+ "<"
+//					+ identifier.getIri()
+//					+ ">"
+//					+ "<"
+//					+ systemProps
+//							.getProperty("agraph.server.graph.subscribe.predicate")
+//					+ ">" + "<" + eachClass.getIri() + ">";
+//			try {
+//				quads.add(new Quad(rawString, uuid));
+//			} catch (ParameterException e) {
+//				throw new ServiceException(e.getMessage());
+//			}
+//		}
+		
+		//Form a quad to call remove
 		List<Quad> quads = new ArrayList<Quad>();
-		for (IRI eachClass : classes) {
-			String rawString = "<"
-					+ systemProps.getProperty("agraph.server.graph.subscribe")
-					+ ">"
-					+ "<"
-					+ identifier.getIri()
-					+ ">"
-					+ "<"
-					+ systemProps
-							.getProperty("agraph.server.graph.subscribe.predicate")
-					+ ">" + "<" + eachClass.getIri() + ">";
+		for (GraphClassPair eachPair : pairs) {
+			String rawString = "<" + eachPair.getGraph() + ">" 
+								+ "<" + identifier.getIri() + ">"
+								+ "<" + systemProps.getProperty("agraph.server.graph.subscribe.predicate") + ">"
+								+ "<" + eachPair.getClassIRI() + ">";
 			try {
 				quads.add(new Quad(rawString, uuid));
 			} catch (ParameterException e) {
