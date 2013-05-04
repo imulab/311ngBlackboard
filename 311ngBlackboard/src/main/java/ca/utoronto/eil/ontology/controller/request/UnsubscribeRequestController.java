@@ -37,19 +37,25 @@ public class UnsubscribeRequestController {
 	private UnsubscribeService unsubscribeService;
 
 	/**
+	 * <p>
 	 * Handle request from <application url>/rest/request/unsubscribe
 	 * 
-	 * @param username
-	 *            username of requestor
-	 * @param password
-	 *            password of requestor
-	 * @param iri
-	 *            Internal Resource Identifier of the unsubscriber
-	 * @param classes
-	 *            pairs of <graph name><class or individual> separated by commas
-	 * @param test
-	 *            optional variable to indicate test mode is on (will walk
-	 *            through business logic but will not commit)
+	 * <p>
+	 * This servlet function checks the user identified by parameter {@code username} and parameter {@code password}
+	 * using {@link ca.utoronto.eil.ontology.service.UserService#doAuthenticate(String, String, String) doAutenticate}.
+	 * If credentials check out correct, it will forward the request to 
+	 * {@link ca.utoronto.eil.ontology.service.UnsubscribeService#doUnsubscribe(String, String, String, Boolean) doUnsubscribe}
+	 * to process.
+	 * 
+	 * <p>
+	 * It will return a JSON format of {@link ca.utoronto.eil.ontology.model.ResponseImpl response structure}. The details
+	 * of the request processing will be recorded inside.
+	 * 
+	 * @param username uername of requestor
+	 * @param password password of requestor
+	 * @param iri Internal Resource Identifier of the unsubscriber
+	 * @param classes pairs of <graph name><class or individual> separated by commas
+	 * @param test optional variable to indicate test mode is on (will walk through business logic but will not commit)
 	 * 
 	 * @return uniform response in JSON format
 	 */
@@ -62,6 +68,7 @@ public class UnsubscribeRequestController {
 			@RequestParam(value = "classes", required = true) String classes,
 			@RequestParam(value = "test", required = false) Boolean test) {
 
+		// Initialize response structure
 		ResponseImpl response = new ResponseImpl();
 		logger.info("unsubscribe request received, assigned UUID = ["
 				+ response.getUuid() + "]");
@@ -75,7 +82,7 @@ public class UnsubscribeRequestController {
 			return gson.toJson(response);
 		}
 
-		// Unsubscribe
+		// Handle unsubscription
 		try {
 			unsubscribeService.doUnsubscribe(iri, classes, response.getUuid(),
 					(test == null) ? (false) : (test));
@@ -85,6 +92,7 @@ public class UnsubscribeRequestController {
 			return gson.toJson(response);
 		}
 
+		// Proper return of response structure
 		logger.info("[" + response.getUuid() + "] request complete");
 		response.setState("success");
 		return gson.toJson(response);

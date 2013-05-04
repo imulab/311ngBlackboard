@@ -30,22 +30,16 @@ public class UnsubscribeService {
 	}
 
 	/**
-	 * Release subscription relationship between subject identified by iriStr
-	 * and classes identified by classesStr
+	 * <p>
+	 * Release subscription relationship between subject identified by {@code iriStr}
+	 * and classes identified by {@code classesStr}
 	 * 
-	 * @param iriStr
-	 *            subject IRI in format <IRI>
-	 * @param classesStr
-	 *            formatted classes in format <class 1>,<class 2>, ..., <class
-	 *            n>
-	 * @param uuid
-	 *            uuid used to identify web request
-	 * @param test
-	 *            flag indicating whether the business logic should be run in
-	 *            test mode
+	 * @param iriStr	 subject IRI in format <IRI>
+	 * @param classesStr formatted classes in format <class 1>,<class 2>, ..., <class n>
+	 * @param uuid uuid used to identify web request
+	 * @param test flag indicating whether the business logic should be run in test mode
 	 * 
-	 * @throws ServiceException
-	 *             anything that went wrong during service period.
+	 * @throws ServiceException anything that went wrong during service period.
 	 */
 	public void doUnsubscribe(String iriStr, String classesStr, String uuid,
 			Boolean test) throws ServiceException {
@@ -66,18 +60,6 @@ public class UnsubscribeService {
 		} catch (ParameterException e) {
 			throw new ServiceException(e.getMessage());
 		}
-
-//		// Validate input classesStr
-//		String[] classesArray = classesStr.split(",");
-//		for (String each : classesArray) {
-//			try {
-//				IRI eachClass = new IRI(each, uuid);
-//				logger.info("[" + uuid + "] " + each + " is valid");
-//				classes.add(eachClass);
-//			} catch (ParameterException e) {
-//				throw new ServiceException(e.getMessage());
-//			}
-//		}
 		
 		//Validate input classesStr
 		String[] pairsArray = classesStr.split(",");
@@ -90,26 +72,6 @@ public class UnsubscribeService {
 				throw new ServiceException(e.getMessage());
 			}
 		}
-
-//		// Form a quad to call remove
-//		List<Quad> quads = new ArrayList<Quad>();
-//		for (IRI eachClass : classes) {
-//			String rawString = "<"
-//					+ systemProps.getProperty("agraph.server.graph.subscribe")
-//					+ ">"
-//					+ "<"
-//					+ identifier.getIri()
-//					+ ">"
-//					+ "<"
-//					+ systemProps
-//							.getProperty("agraph.server.graph.subscribe.predicate")
-//					+ ">" + "<" + eachClass.getIri() + ">";
-//			try {
-//				quads.add(new Quad(rawString, uuid));
-//			} catch (ParameterException e) {
-//				throw new ServiceException(e.getMessage());
-//			}
-//		}
 		
 		//Form a quad to call remove
 		List<Quad> quads = new ArrayList<Quad>();

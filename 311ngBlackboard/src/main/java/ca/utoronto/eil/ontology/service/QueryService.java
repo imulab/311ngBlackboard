@@ -19,17 +19,20 @@ public class QueryService {
 	@Autowired private AGraphDao dao;
 	
 	/**
-	 * Run a query and return result
-	 * Consult result format in ca.utoronto.eil.ontology.model.QueryResult
+	 * <p>
+	 * Run a query and return result.
+	 * Consult result format in {@link ca.utoronto.eil.ontology.model.QueryResult Query Result Interface } or
+	 * {@link ca.utoronto.eil.ontology.model.QueryResultImpl Query Result Implementation}
 	 * 
 	 * @param query query string
 	 * @param uuid uuid used to track request
-	 * @return query result as in ca.utoronto.eil.ontology.model.QueryResult
+	 * @return query result as in {@link ca.utoronto.eil.ontology.model.QueryResult Query Result Interface}
 	 * 
 	 * @throws ServiceException
 	 */
 	public QueryResult doQuery(String query, String uuid) throws ServiceException {
 		
+		// Refuse to process is query is NULL
 		if (query == null) {
 			throw new ServiceException("code:E0028");
 		}

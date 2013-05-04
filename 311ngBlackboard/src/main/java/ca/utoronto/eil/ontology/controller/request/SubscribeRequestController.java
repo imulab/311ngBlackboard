@@ -31,7 +31,19 @@ public class SubscribeRequestController {
 	@Autowired private SubscribeService subscribeService;
 	
 	/**
-	 * Handle request from <application url>/rest/request/subscribe
+	 * <p>
+	 * Handle request from <application url>/rest/request/subscribe.
+	 * 
+	 * <p>
+	 * This servlet function checks the user identified by parameter {@code username} and parameter {@code password}
+	 * using {@link ca.utoronto.eil.ontology.service.UserService#doAuthenticate(String, String, String) doAutenticate}.
+	 * If credentials check out correct, it will forward the request to 
+	 * {@link ca.utoronto.eil.ontology.service.SubscribeService#doSubscribe(String, String, String, Boolean) doSubscribe}
+	 * to process.
+	 * 
+	 * <p>
+	 * It will return a JSON format of {@link ca.utoronto.eil.ontology.model.ResponseImpl response structure}. The details
+	 * of the request processing will be recorded inside.
 	 * 
 	 * @param username username of requestor
 	 * @param password password of requestor
@@ -49,10 +61,11 @@ public class SubscribeRequestController {
 			@RequestParam(value="classes", required=true) String classes,
 			@RequestParam(value="test", required=false) Boolean test) {
 		
+		// Initialize response structure
 		ResponseImpl response = new ResponseImpl();
 		logger.info("subscribe request received, assigned UUID = [" + response.getUuid() + "]");
 		
-		//Authenticate user
+		// Authenticate user
 		try {
 			userService.doAuthenticate(username, password, response.getUuid());
 		} catch (AuthenticationException e) {
@@ -61,7 +74,7 @@ public class SubscribeRequestController {
 			return gson.toJson(response);
 		}
 		
-		//Subscribe
+		// Handle subscription
 		try {
 			subscribeService.doSubscribe(iri, classes, response.getUuid(), (test == null) ? (false) : (test));
 		} catch (ServiceException e) {
@@ -70,6 +83,7 @@ public class SubscribeRequestController {
 			return gson.toJson(response);
 		}
 		
+		// Proper return of response structure
 		logger.info("[" + response.getUuid() + "] request complete");
 		response.setState("success");
 		return gson.toJson(response);

@@ -31,11 +31,19 @@ public class PublishRequestController {
 	@Autowired private PublishService publishService;
 	
 	/**
+	 * <p>
 	 * Handle request from <application url>/rest/request/publish
+	 * 
+	 * <p>
+	 * This servlet function checks the user identified by parameter {@code username} and parameter {@code password}
+	 * using {@link ca.utoronto.eil.ontology.service.UserService#doAuthenticate(String, String, String) doAutenticate}.
+	 * If credentials check out correct, it will forward the request to 
+	 * {@link ca.utoronto.eil.ontology.service.PublishService#doPublish(String, String, Boolean, Boolean) doPublish}
+	 * to process.
 	 * 
 	 * @param username username of requestor
 	 * @param password password of requestor
-	 * @param quads <graph name><subject><property><object> separated by commas
+	 * @param quads <graph name><subject><predicate><object> separated by commas
 	 * @param test optional variable to indicate test mode is on (will walk through business logic but will not commit)
 	 * 
 	 * @return uniform response in JSON format
@@ -48,10 +56,11 @@ public class PublishRequestController {
 			@RequestParam(value="test", required=false) Boolean test,
 			@RequestParam(value="enableNotify", required=false) Boolean enableNotify) {
 		
+		// Initialize response structure
 		ResponseImpl response = new ResponseImpl();
 		logger.info("publish request received, assigned UUID = [" + response.getUuid() + "]");
 		
-		//Authenticate user
+		// Authenticate user
 		try {
 			userService.doAuthenticate(username, password, response.getUuid());
 		} catch (AuthenticationException e) {
@@ -60,7 +69,7 @@ public class PublishRequestController {
 			return gson.toJson(response);
 		}
 		
-		//Publish
+		// Handle publish, default test mode is off, default notify mode is on
 		try {
 			publishService.doPublish(quads, 
 					response.getUuid(), 
@@ -72,6 +81,7 @@ public class PublishRequestController {
 			return gson.toJson(response);
 		}
 		
+		// Proper return of response structure
 		logger.info("[" + response.getUuid() + "] request complete");
 		response.setState("success");
 		return gson.toJson(response);

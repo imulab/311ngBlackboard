@@ -39,22 +39,28 @@ public class PublishService {
 	}
 
 	/**
-	 * Publish the instances identified by quadsStr to the database, then
-	 * retrieve a list of subscribers and notify them what has just been
-	 * published.
+	 * <p>
+	 * Publish the instances identified by {@code quadsStr} to the database. After publish is complete,
+	 * go up the class hierarchy and get a list subscribers of each level. All subscribers will be consolidated
+	 * and recorded in a single list to avoid duplicate notification. Also note that the quads identified by
+	 * {@code quadsStr} and seperated by its subject in advance of searching for subscribers. This
+	 * is done to ensure a complete search for subscribers in the case that quads about multiple subjects are published
+	 * at the same time.
 	 * 
-	 * @param quadsStr
-	 *            instances
-	 * @param uuid
-	 *            uuid to identify web request
-	 * @param test
-	 *            flag to indicate whether test mode is on
-	 * @param enableNotify
-	 *            flag to indicate if service should continue to notify
-	 *            subscribers when publish is done
+	 * <p>
+	 * For details of searching for subscribers, please consult 
+	 * {@link ca.utoronto.eil.ontology.service.SubscribeService#getImmediateSubscribers(String, String, String) getImmediateSubscribers}
 	 * 
-	 * @throws ServiceException
-	 *             anything that went wrong
+	 * <p>
+	 * For details of notification, please consult
+	 * {@link ca.utoronto.eil.ontology.service.NotificationService#doNotification(String, String, String, Boolean) doNotification}
+	 * 
+	 * @param quadsStr instances
+	 * @param uuid uuid to identify web request
+	 * @param test flag to indicate whether test mode is on
+	 * @param enableNotify flag to indicate if service should continue to notify subscribers when publish is done
+	 * 
+	 * @throws ServiceException anything that went wrong
 	 */
 	public void doPublish(String quadsStr, String uuid, Boolean test,
 			Boolean enableNotify) throws ServiceException {
@@ -85,32 +91,38 @@ public class PublishService {
 			throw new ServiceException(e.getMessage());
 		}
 
+		// Only do notification when notification mode is on. (This mode is on by default, by can be override)
 		if (enableNotify) {
+			
 			// Split the list of quads into groups by subjects
 			List<List<Quad>> groupByQuads = QuadUtil.groupBySubject(quads);
 			logger.info("[" + uuid + "] the list of quads are seperated to "
 					+ groupByQuads.size() + " based on subjects");
 
+			// For each group of quads with the same subject
 			for (List<Quad> eachGroupBy : groupByQuads) {
+				
 				if (eachGroupBy.size() == 0)
 					continue;
 				
+				// Record the graph name to search in (assuming the subscription quads reside in the same graph context)
 				String graphToLook = eachGroupBy.get(0).getGraph();
-				
 				logger.info("[" + uuid + "]" + " Looking for subscribers of " + eachGroupBy.get(0).getSubject());
 				
+				// Call subscription service to get the list of subscribers for the entire super class hierarchy.
 				List<String> subscriberIRIs = subscribeService
 						.getImmediateSubscribers(graphToLook,
 								eachGroupBy.get(0).getSubject(), uuid);
-				
 				logger.info("[" + uuid + "] found " + subscriberIRIs.size()
 						+ " subscribers for "
 						+ eachGroupBy.get(0).getSubject());
 				
+				// Send notification
 				if (subscriberIRIs != null && subscriberIRIs.size() > 0) {
+					
 					String quadListStr = QuadUtil.convertToString(eachGroupBy);
-
-					// Notify each subscriber
+					
+					// Notify each subscriber using the notification service
 					for (String eachSubscriber : subscriberIRIs) {
 						notificationService.doNotification(eachSubscriber,
 								quadListStr, uuid, test);

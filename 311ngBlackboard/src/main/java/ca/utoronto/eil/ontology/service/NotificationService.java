@@ -33,6 +33,7 @@ public class NotificationService {
 	}
 	
 	/**
+	 * <p>
 	 * Sends notification to the client-specified URI
 	 * 
 	 * @param destinationIRI URI to send notifications to
@@ -41,6 +42,10 @@ public class NotificationService {
 	 * @throws ServiceException anything that went wrong during the process
 	 */
 	public void doNotification(String destinationIRI, String quadsStr, String uuid, Boolean test) throws ServiceException {
+		
+		/*
+		 * Use Apache HTTP Component to send the quads to the subscriber IRI
+		 */
 		try {
 			
 			URIBuilder builder = new URIBuilder();

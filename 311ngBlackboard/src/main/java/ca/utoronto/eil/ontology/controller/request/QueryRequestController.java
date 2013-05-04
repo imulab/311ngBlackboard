@@ -38,17 +38,27 @@ public class QueryRequestController {
 	private QueryService queryService;
 
 	/**
+	 * <p>
 	 * Handle request from <application url>/rest/request/query.
 	 * 
-	 * @param username
-	 *            username of requestor
-	 * @param password
-	 *            password of requestor
-	 * @param query
-	 *            SPARQL query string
+	 * <p>
+	 * This servlet function checks the user identified by parameter {@code username} and parameter {@code password}
+	 * using {@link ca.utoronto.eil.ontology.service.UserService#doAuthenticate(String, String, String) doAutenticate}.
+	 * If credentials check out correct, it will forward the request to 
+	 * {@link ca.utoronto.eil.ontology.service.QueryService#doQuery(String, String) doQuery}
+	 * to process.
 	 * 
-	 * @return uniform response in JSON format. (Query result location =
-	 *         response.objectMap['query.result'])
+	 * <p>
+	 * It will return a JSON format of {@link ca.utoronto.eil.ontology.model.ResponseImpl response structure}. The details
+	 * of the request processing will be recorded inside. Specifically for the query operation, objectMap['query.result'] is
+	 * used to store the result bindings, refer to {@link ca.utoronto.eil.ontology.model.QueryResult Query Result Interface} or
+	 * {@link ca.utoronto.eil.ontology.model.QueryResultImpl Query Result Implementation} for extracting results.
+	 * 
+	 * @param username username of requestor
+	 * @param password password of requestor
+	 * @param query SPARQL query string
+	 * 
+	 * @return uniform response in JSON format.
 	 */
 	@RequestMapping(value = "/query", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
 	public @ResponseBody
@@ -57,6 +67,7 @@ public class QueryRequestController {
 			@RequestParam(value = "password", required = true) String password,
 			@RequestParam(value = "query", required = true) String query) {
 
+		// Initialize response structure
 		ResponseImpl response = new ResponseImpl();
 		logger.info("query request received, assigned UUID = ["
 				+ response.getUuid() + "]");
@@ -88,6 +99,7 @@ public class QueryRequestController {
 			return gson.toJson(response);
 		}
 
+		// Proper return
 		logger.info("[" + response.getUuid() + "] request complete");
 		return gson.toJson(response);
 	}
